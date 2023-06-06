@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="hu">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css"
+    integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
+
+<head>
+    <title>Memória Játék</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, orange 60%, cyan);
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+
+        }
+
+
+        .container {
+            display: flex;
+            justify-content: center;
+            height: 500px;
+            margin-top: 100px;
+            background: rgb(2, 0, 36);
+            background: linear-gradient(90deg, rgba(2, 0, 36, 1) 0%, rgba(176, 157, 112, 1) 35%, rgba(0, 212, 255, 1) 100%);
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+        }
+
+        .margo{
+            margin-top: 100px;
+        }
+        .joe{
+            max-width: 450px;
+        }
+
+        .card {
+            width: 50px;
+            height: 50px;
+            background-color: #ccc;
+            display: inline-block;
+            margin: 5px;
+            text-align: center;
+            font-size: 24px;
+            cursor: pointer;
+            perspective: 1000px;
+        }
+
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+
+        .card.flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .card-front,
+        .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+        }
+
+        .card-front {
+            background-color: #ccc;
+        }
+
+        .card-back {
+            background-color: #f00;
+            transform: rotateY(180deg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .button-29 {
+            align-items: center;
+            appearance: none;
+            background-image: radial-gradient(100% 100% at 100% 0, #5adaff 0, #5468ff 100%);
+            border: 0;
+            border-radius: 6px;
+            box-shadow: rgba(45, 35, 66, .4) 0 2px 4px, rgba(45, 35, 66, .3) 0 7px 13px -3px, rgba(58, 65, 111, .5) 0 -3px 0 inset;
+            box-sizing: border-box;
+            color: #fff;
+            cursor: pointer;
+            display: inline-flex;
+            font-family: "JetBrains Mono", monospace;
+            height: 48px;
+            justify-content: center;
+            line-height: 1;
+            list-style: none;
+            overflow: hidden;
+            padding-left: 16px;
+            padding-right: 16px;
+            position: relative;
+            text-align: left;
+            text-decoration: none;
+            transition: box-shadow .15s, transform .15s;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+            white-space: nowrap;
+            will-change: box-shadow, transform;
+            font-size: 18px;
+        }
+
+        .button-29:focus {
+            box-shadow: #3c4fe0 0 0 0 1.5px inset, rgba(45, 35, 66, .4) 0 2px 4px, rgba(45, 35, 66, .3) 0 7px 13px -3px, #3c4fe0 0 -3px 0 inset;
+        }
+
+        .button-29:hover {
+            box-shadow: rgba(45, 35, 66, .4) 0 4px 8px, rgba(45, 35, 66, .3) 0 7px 13px -3px, #3c4fe0 0 -3px 0 inset;
+            transform: translateY(-2px);
+        }
+
+        .button-29:active {
+            box-shadow: #3c4fe0 0 3px 7px inset;
+            transform: translateY(2px);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div>
+            <div class="d-flex justify-content-center align-items-center margo">
+                <div>
+                    <h1 class="text-center">Memória Játék</h1>
+                    <label for="board-size" class="button-29">Tábla mérete (2-5):</label>
+                    <input class="button-29" type="number" id="board-size" min="2" max="5">
+                    <button onclick="createBoard()" class="button-29">Tábla létrehozása</button>
+                    <button onclick="resetGame()" class="button-29">Játék újraindítása</button>
+                </div>
+
+            </div>
+
+            <div class="d-flex justify-content-center">
+                <div class="row joe">
+                    <div class="col-md-12" id="game-board"></div>
+                    <div class="col-md-12" id="game-board"></div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <script>
+        var boardSize;
+        var cards;
+        var flippedCards = [];
+        var matchedCards = [];
+
+
+        function generateCards(size) {
+            var numPairs = size * size / 2;
+            var emojis = ["🐶", "🐱", "🐭", "🐊", "🦊", "🐻", "🐼", "🐯", "🦆", "🐍", "🦍", "🐵", "🐸"];
+            var generatedCards = [];
+
+            for (var i = 0; i < numPairs; i++) {
+                var emoji = emojis[i];
+                generatedCards.push(emoji);
+                generatedCards.push(emoji);
+            }
+
+            return generatedCards;
+        }
+
+        function shuffle(array) {
+            var currentIndex = array.length, temporaryValue, randomIndex;
+
+            while (0 !== currentIndex) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex -= 1;
+
+                temporaryValue = array[currentIndex];
+                array[currentIndex] = array[randomIndex];
+                array[randomIndex] = temporaryValue;
+            }
+
+            return array;
+        }
+
+        function createBoard() {
+            var sizeInput = document.getElementById("board-size");
+            boardSize = parseInt(sizeInput.value);
+
+            if (boardSize < 2 || boardSize > 5) {
+                alert("Hibás méretérték! A tábla mérete 2 és 5 közötti érték lehet.");
+                return;
+            }
+
+            cards = generateCards(boardSize);
+            flippedCards = [];
+            matchedCards = [];
+
+
+
+            renderBoard();
+        }
+
+        function renderBoard() {
+            var gameBoard = document.getElementById("game-board");
+            gameBoard.innerHTML = "";
+
+            var shuffledCards = shuffle(cards);
+
+            for (var i = 0; i < shuffledCards.length; i++) {
+                var card = document.createElement("div");
+                card.className = "card";
+                card.addEventListener("click", flipCard);
+
+                var cardInner = document.createElement("div");
+                cardInner.className = "card-inner";
+
+                var cardFront = document.createElement("div");
+                cardFront.className = "card-front";
+                cardFront.innerHTML = "&nbsp;";
+
+                var cardBack = document.createElement("div");
+                cardBack.className = "card-back";
+                cardBack.innerHTML = shuffledCards[i];
+
+                cardInner.appendChild(cardFront);
+                cardInner.appendChild(cardBack);
+                card.appendChild(cardInner);
+
+                gameBoard.appendChild(card);
+            }
+        }
+
+        function flipCard() {
+            if (flippedCards.length < 2 && !this.classList.contains("matched") && !this.classList.contains("flipped")) {
+                this.classList.add("flipped");
+                flippedCards.push(this);
+
+                if (flippedCards.length === 2) {
+                    checkForMatch();
+                }
+            }
+        }
+
+        function checkForMatch() {
+            var card1 = flippedCards[0];
+            var card2 = flippedCards[1];
+            var symbol1 = card1.querySelector(".card-back").innerHTML;
+            var symbol2 = card2.querySelector(".card-back").innerHTML;
+
+            if (symbol1 === symbol2) {
+                card1.classList.add("matched");
+                card2.classList.add("matched");
+                matchedCards.push(card1);
+                matchedCards.push(card2);
+            } else {
+                setTimeout(function () {
+                    card1.classList.remove("flipped");
+                    card2.classList.remove("flipped");
+                }, 1000);
+            }
+
+            flippedCards = [];
+
+            if (matchedCards.length === cards.length) {
+                setTimeout(function () {
+                    alert("Gratulálok, nyertél!");
+                }, 500);
+            }
+        }
+
+
+        function resetGame() {
+            var sizeInput = document.getElementById("board-size")
+            sizeInput.value = "";
+
+            boardSize = null;
+            cards = null;
+            flippedCards = [];
+            matchedCards = [];
+
+            var gameBoard = document.getElementById("game-board");
+            gameBoard.innerHTML = "";
+        }
+    </script>
+</body>
+
+</html>
